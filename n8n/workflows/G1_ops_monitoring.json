@@ -1,0 +1,48 @@
+{
+  "name": "Ops \u2013 Monitoring & Auto-Retry",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Cron Health",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Check Workflows",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Auto Retry Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Alert if Down",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

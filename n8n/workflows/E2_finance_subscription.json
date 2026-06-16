@@ -1,0 +1,38 @@
+{
+  "name": "Finance \u2013 Subscription Management",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Webhook Stripe",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Update Subscription",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Notify User",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

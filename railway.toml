@@ -1,0 +1,25 @@
+[build]
+builder = "nixpacks"
+
+[[services]]
+name = "postgres"
+image = "pgvector/pgvector:pg17"
+
+[[services]]
+name = "redis"
+image = "redis:7-alpine"
+
+[[services]]
+name = "api"
+root = "services/api"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+
+[[services]]
+name = "n8n"
+image = "n8nio/n8n:1.88.0"
+variables = { EXECUTIONS_MODE = "queue", QUEUE_BULL_REDIS_HOST = "redis", DB_TYPE = "postgresdb" }
+
+[[services]]
+name = "ui"
+root = "ui"
+startCommand = "npm start"

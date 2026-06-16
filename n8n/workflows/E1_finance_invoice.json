@@ -1,0 +1,48 @@
+{
+  "name": "Finance \u2013 Invoice Processing",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "S3 Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Extract PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "AI Extract Fields",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Insert Invoice",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

@@ -1,0 +1,58 @@
+{
+  "name": "Support \u2013 AI Auto-Response + SLA",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Ticket Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "RAG pgvector",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "OpenAI Response",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Confidence Check",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Escalate",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1040,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

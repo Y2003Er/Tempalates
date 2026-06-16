@@ -1,0 +1,57 @@
+{
+  "name": "Auth \u2013 Registration + MFA",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "register",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook Register",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{email:$input.item.json.email, password_hash:'bcrypt_'+$input.item.json.password}}]"
+      },
+      "name": "Hash Password",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "users"
+      },
+      "name": "Postgres Insert",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Send Welcome",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

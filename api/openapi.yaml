@@ -1,0 +1,7 @@
+openapi: 3.1.0
+info:
+  title: Automation Platform API
+  version: 2026.1
+paths:
+  /health:
+    get: {summary: Health}

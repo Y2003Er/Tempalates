@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N8N Automation Platform 2026 — Command Center</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Fraunces', 'serif'],
+        },
+        colors: {
+          base: '#0b0f1a',
+          violetElectric: '#8b5cf6',
+          cyanSoft: '#22d3ee',
+          glass: 'rgba(255,255,255,0.06)',
+          glassBorder: 'rgba(255,255,255,0.12)',
+          slateText: '#a8b0be',
+        },
+        boxShadow: {
+          'glow-violet': '0 0 36px rgba(139, 92, 246, 0.22), inset 0 1px 0 rgba(255,255,255,0.08)',
+          'glow-cyan': '0 0 30px rgba(34, 211, 238, 0.18)',
+        }
+      }
+    }
+  }
+</script>
+<style type="text/tailwindcss">
+  :root {
+    --bg: #0b0f1a;
+  }
+  body {
+    background-color: #0b0f1a;
+    color: #e6e9f2;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Aurora background */
+  .aurora-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #0b0f1a;
+  }
+  .aurora-bg::before,
+  .aurora-bg::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(120px);
+    opacity: 0.55;
+  }
+  .aurora-bg::before {
+    width: 720px;
+    height: 520px;
+    left: -140px;
+    top: -140px;
+    background: radial-gradient(circle at center, rgba(139,92,246,0.28), rgba(34,211,238,0.12) 55%, transparent 70%);
+  }
+  .aurora-bg::after {
+    width: 640px;
+    height: 480px;
+    right: -120px;
+    top: 30%;
+    background: radial-gradient(circle at center, rgba(34,211,238,0.16), rgba(139,92,246,0.2) 60%, transparent 72%);
+  }
+  .aurora-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  .glass {
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.11);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .glass-strong {
+    background: rgba(17, 22, 37, 0.74);
+    border: 1px solid rgba(255,255,255,0.11);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+  }
+  .glass-hover:hover {
+    background: rgba(255,255,255,0.065);
+    border-color: rgba(255,255,255,0.18);
+    transition: all 180ms ease;
+  }
+  .nav-item {
+    transition: all 150ms ease;
+  }
+  .nav-item.active {
+    background: rgba(139,92,246,0.14);
+    border-color: rgba(139,92,246,0.35);
+    color: white;
+  }
+  .nav-item:not(.active):hover {
+    background: rgba(255,255,255,0.045);
+    color: white;
+  }
+
+  /* Copilot glowing button */
+  .copilot-glow {
+    position: relative;
+    box-shadow: 0 0 24px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .copilot-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(120deg, #8b5cf6, #22d3ee, #8b5cf6);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: .65;
+    pointer-events: none;
+  }
+
+  /* Chart tooltip */
+  .chart-dot {
+    transition: r 120ms ease;
+  }
+
+  /* Scrollbars */
+  .soft-scroll::-webkit-scrollbar { width: 6px; }
+  .soft-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+
+  /* Toast */
+  @keyframes toast-in { from { transform: translateY(8px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+  .toast-in { animation: toast-in .22s ease-out; }
+
+  /* Hide scrollbar for agent list on mobile */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* KPI number */
+  .kpi-num { letter-spacing: -0.035em; }
+</style>
+</head>
+<body class="min-h-screen font-sans bg-base text-slate-100 antialiased relative">
+<div class="aurora-bg"><div class="aurora-grain"></div></div>
+
+<!-- Mobile sidebar overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+<!-- LEFT SIDEBAR -->
+<aside id="sidebar" class="fixed left-0 top-0 z-50 h-full w-[292px] glass-strong lg:translate-x-0 -translate-x-full transition-transform duration-300 ease-out flex flex-col">
+  <div class="px-7 pt-7 pb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-[12px] bg-gradient-to-br from-violetElectric to-cyanSoft flex items-center justify-center shadow-glow-violet">
+        <i data-lucide="workflow" class="w-[18px] h-[18px] text-white"></i>
+      </div>
+      <div>
+        <div class="text-[15px] font-semibold tracking-tight text-white">N8N AUTOMATION</div>
+        <div class="text-[11px] text-slate-400 -mt-0.5 tracking-wide">PLATFORM • 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-5">
+    <div class="text-[10.5px] uppercase tracking-wider text-slate-500 font-semibold px-3 mb-2">Command Center</div>
+    <nav class="space-y-1.5" id="sidebar-nav">
+      <a href="#" data-nav="Overview" class="nav-item active flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-200">
+        <i data-lucide="layout-grid" class="w-[17px] h-[17px] text-slate-400"></i>
+        Overview
+        <span class="ml-auto text-[10px] text-slate-500">⌘1</span>
+      </a>
+      <a href="#" data-nav="Workflows" class="nav-item flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-300">
+        <i data-lucide="git-branch" class="w-[17px] h-[17px] text-slate-400"></i>
+        Workflows
+        <span class="ml-auto text-[11px] text-slate-400">412</span>
+      </a>
+      <a href="#" data-nav="AI Agents" class="nav-item flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-300">
+        <i data-lucide="bot" class="w-[17px] h-[17px] text-slate-400"></i>
+        AI Agents
+        <span class="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shadow shadow-emerald-400/40"></span>
+      </a>
+      <a href="#" data-nav="RAG Knowledge" class="nav-item flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-300">
+        <i data-lucide="database-zap" class="w-[17px] h-[17px] text-slate-400"></i>
+        RAG Knowledge
+      </a>
+      <a href="#" data-nav="Monitoring" class="nav-item flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-300">
+        <i data-lucide="activity" class="w-[17px] h-[17px] text-slate-400"></i>
+        Monitoring
+      </a>
+      <div class="pt-3 pb-1 px-3 text-[10.5px] uppercase tracking-wider text-slate-500 font-semibold">Workspace</div>
+      <a href="#" data-nav="Billing" class="nav-item flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-300">
+        <i data-lucide="credit-card" class="w-[17px] h-[17px] text-slate-400"></i>
+        Billing
+      </a>
+      <a href="#" data-nav="Settings" class="nav-item flex items-center gap-3 px-3 py-[10px] rounded-xl border border-transparent text-[13.5px] font-medium text-slate-300">
+        <i data-lucide="settings-2" class="w-[17px] h-[17px] text-slate-400"></i>
+        Settings
+      </a>
+    </nav>
+  </div>
+
+  <!-- Pro workspace card -->
+  <div class="mt-auto px-5 pb-6">
+    <div class="glass rounded-[18px] p-4">
+      <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Pro Workspace</div>
+      <div class="text-[13px] text-slate-300 mb-3">2,840 / 5,000 runs left<br/>this cycle</div>
+      <div class="w-full h-1.5 bg-white/[0.08] rounded-full overflow-hidden mb-3">
+        <div class="h-full rounded-full bg-gradient-to-r from-violetElectric to-cyanSoft" style="width:57%"></div>
+      </div>
+      <button id="upgrade-btn" class="w-full text-[12.5px] font-semibold py-2 rounded-xl bg-white/[0.07] hover:bg-white/[0.11] border border-white/[0.12] text-slate-200 transition">Upgrade to Scale</button>
+    </div>
+    <div class="flex items-center gap-3 mt-4 px-1">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#6a5bff] to-[#a855f7] flex items-center justify-center text-[12px] font-bold text-white">YH</div>
+      <div class="min-w-0 flex-1">
+        <div class="text-[13px] font-semibold text-white truncate">Yusuph Hanigomba</div>
+        <div class="text-[11.5px] text-slate-400">Owner • Arusha, TZ</div>
+      </div>
+      <button class="text-slate-500 hover:text-slate-300"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN APP FRAME -->
+<div class="relative z-10 lg:pl-[292px] min-h-screen flex flex-col">
+  <!-- TOP BAR -->
+  <header class="sticky top-0 z-30 border-b border-white/[0.08] bg-[#0b0f1a]/70 backdrop-blur-xl">
+    <div class="px-4 sm:px-7 lg:px-9 h-[68px] flex items-center gap-3 sm:gap-4">
+      <button id="mobile-menu-btn" class="lg:hidden glass rounded-xl p-2.5 text-slate-300 hover:text-white">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+
+      <div class="hidden sm:flex items-center gap-2 text-[12.5px] text-slate-400">
+        <span class="text-slate-500">Home</span>
+        <span class="text-slate-600">/</span>
+        <span class="text-slate-200">Overview</span>
+      </div>
+
+      <div class="flex-1"></div>
+
+      <!-- Search -->
+      <div class="relative hidden md:block w-[320px] max-w-[42vw]">
+        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-slate-500"></i>
+        <input id="globalSearch" type="text" placeholder="Search workflows, agents, runs…" class="w-full bg-white/[0.045] border border-white/[0.11] rounded-full pl-10 pr-4 py-2.5 text-[13px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violetElectric/60 focus:bg-white/[0.065] transition" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-500 hidden xl:block">⌘K</span>
+      </div>
+
+      <!-- Copilot Button -->
+      <button id="copilot-toggle" class="copilot-glow rounded-full px-4 py-2.5 text-[13px] font-semibold bg-gradient-to-r from-[#8355ff] to-[#5b8cff] text-white flex items-center gap-2 shrink-0 hover:opacity-95 transition">
+        <span class="w-4 h-4 rounded-full bg-white/25 flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-[11px] h-[11px]"></i>
+        </span>
+        <span class="hidden sm:inline">AI Copilot</span>
+        <span class="sm:hidden">AI</span>
+      </button>
+
+      <!-- Notifications -->
+      <button id="notif-btn" class="relative glass glass-hover rounded-full w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white">
+        <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+        <span class="absolute -top-0.5 -right-0.5 bg-[#ff5a7a] text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">3</span>
+      </button>
+
+      <!-- User -->
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#e8b15d] to-[#d77a4a] flex items-center justify-center text-[12px] font-extrabold text-[#22160a]">YH</div>
+    </div>
+    <!-- Mobile search -->
+    <div class="md:hidden px-4 pb-3 -mt-1">
+      <div class="relative">
+        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-slate-500"></i>
+        <input id="globalSearchMobile" type="text" placeholder="Search workflows, agents…" class="w-full bg-white/[0.045] border border-white/[0.11] rounded-full pl-10 pr-4 py-2.5 text-[13px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violetElectric/60" />
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="px-4 sm:px-7 lg:px-9 py-7 lg:py-9 flex-1 w-full max-w-[1380px]">
+    <!-- Page title -->
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-[30px] sm:text-[36px] font-display font-[700] tracking-tight text-white">Automation Command Center</h1>
+        <p class="text-slate-400 text-[13.5px] sm:text-[14px] mt-1">Live orchestration for 412 production workflows • Arusha • <span class="text-slate-300">UTC+3</span></p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="glass glass-hover rounded-full px-3.5 py-2 text-[12.5px] text-slate-300 flex items-center gap-1.5"><i data-lucide="download" class="w-3.5 h-3.5"></i> Export</button>
+        <button class="glass glass-hover rounded-full px-3.5 py-2 text-[12.5px] text-slate-300 flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Last 7 days</button>
+        <button class="rounded-full px-3.5 py-2 text-[12.5px] font-semibold bg-white text-[#0b0f1a] hover:bg-slate-200 transition flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Workflow
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5 mb-6">
+      <!-- KPI 1 -->
+      <div class="glass rounded-[22px] p-5 glass-hover">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-[11.5px] uppercase tracking-wider text-slate-400 font-semibold">Workflow Runs</div>
+          <div class="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/[0.10] flex items-center justify-center text-slate-300"><i data-lucide="git-branch" class="w-4 h-4"></i></div>
+        </div>
+        <div class="kpi-num text-[32px] font-[800] tracking-tight text-white">1.24M</div>
+        <div class="flex items-center gap-2 text-[12px] mt-2">
+          <span class="text-emerald-400 flex items-center gap-1 font-semibold"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +14.2%</span>
+          <span class="text-slate-400">vs last week</span>
+        </div>
+      </div>
+      <!-- KPI 2 -->
+      <div class="glass rounded-[22px] p-5 glass-hover">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-[11.5px] uppercase tracking-wider text-slate-400 font-semibold">Success Rate</div>
+          <div class="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/[0.10] flex items-center justify-center text-slate-300"><i data-lucide="badge-check" class="w-4 h-4"></i></div>
+        </div>
+        <div class="kpi-num text-[32px] font-[800] tracking-tight text-white">99.2%</div>
+        <div class="flex items-center gap-2 text-[12px] mt-2">
+          <span class="text-emerald-400 flex items-center gap-1 font-semibold"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +0.4pp</span>
+          <span class="text-slate-400">SLO 99.0%</span>
+        </div>
+      <!-- KPI 3 -->
+      <div class="glass rounded-[22px] p-5 glass-hover">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-[11.5px] uppercase tracking-wider text-slate-400 font-semibold">Active Agents</div>
+          <div class="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/[0.10] flex items-center justify-center text-slate-300"><i data-lucide="bot" class="w-4 h-4"></i></div>
+        </div>
+        <div class="kpi-num text-[32px] font-[800] tracking-tight text-white">6</div>
+        <div class="flex items-center gap-2 text-[12px] mt-2 text-slate-400">
+          All green • 4,182 msgs / 24h
+        </div>
+      </div>
+      <!-- KPI 4 -->
+      <div class="glass rounded-[22px] p-5 glass-hover">
+        <div class="flex items-start justify-between mb-3">
+          <div class="text-[11.5px] uppercase tracking-wider text-slate-400 font-semibold">Avg Latency</div>
+          <div class="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/[0.10] flex items-center justify-center text-slate-300"><i data-lucide="gauge" class="w-4 h-4"></i></div>
+        </div>
+        <div class="kpi-num text-[32px] font-[800] tracking-tight text-white">142ms</div>
+        <div class="flex items-center gap-2 text-[12px] mt-2">
+          <span class="text-emerald-400 flex items-center gap-1 font-semibold"><i data-lucide="arrow-down-right" class="w-3.5 h-3.5"></i> -18ms</span>
+          <span class="text-slate-400">p95 improved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE ROW -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-5 mb-5">
+      <!-- Workflow Activity Chart -->
+      <div class="xl:col-span-7 glass rounded-[22px] p-5 sm:p-6">
+        <div class="flex items-start justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <div class="text-[14px] font-semibold text-white">Real-time Workflow Activity</div>
+            <div class="text-[12.5px] text-slate-400 mt-0.5">Last 7 days • n8n cloud • eu-west</div>
+          </div>
+          <div class="flex items-center gap-4 text-[11.5px] text-slate-400">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-violetElectric"></span> Runs</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyanSoft"></span> Success</span>
+            <button class="glass glass-hover rounded-full px-2.5 py-1 text-[11px]">7D</button>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="relative w-full">
+          <div id="chart-tooltip" class="pointer-events-none absolute -translate-x-1/2 -translate-y-[120%] bg-[#151b2c]/95 border border-white/[0.14] text-[11px] rounded-lg px-2.5 py-1.5 text-slate-200 shadow-xl backdrop-blur-xl hidden" style="left:0; top:0;"></div>
+          <svg id="activity-chart" viewBox="0 0 760 220" class="w-full h-[210px] sm:h-[230px]" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.34"/>
+                <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="100%" stop-color="#8b5cf6"/>
+              </linearGradient>
+              <filter id="glowDot" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <!-- grid -->
+            <g stroke="rgba(255,255,255,0.07)" stroke-width="1">
+              <line x1="0" y1="40" x2="760" y2="40"/>
+              <line x1="0" y1="95" x2="760" y2="95"/>
+              <line x1="0" y1="150" x2="760" y2="150"/>
+            </g>
+            <!-- area + line will be injected by JS -->
+            <path id="areaPath" fill="url(#areaFill)"></path>
+            <path id="linePath" fill="none" stroke="url(#lineGrad)" stroke-width="2.7"></path>
+            <g id="chart-dots"></g>
+            <!-- x labels -->
+            <g fill="#7b8395" font-size="11" font-family="Inter" text-anchor="middle">
+              <text x="40" y="208">Mon</text>
+              <text x="156" y="208">Tue</text>
+              <text x="272" y="208">Wed</text>
+              <text x="388" y="208">Thu</text>
+              <text x="504" y="208">Fri</text>
+              <text x="620" y="208">Sat</text>
+              <text x="730" y="208">Sun</text>
+            </g>
+          </svg>
+        </div>
+        <div class="flex flex-wrap gap-x-5 gap-y-1 text-[11.5px] text-slate-400 mt-1">
+          <span>Peak: 204k runs / Fri 14:00 EAT</span>
+          <span>•</span>
+          <span>Drop-offs: 0.8% • Auto-retried</span>
+        </div>
+      </div>
+
+      <!-- AI Agent Usage -->
+      <div class="xl:col-span-5 glass rounded-[22px] p-5 sm:p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-[14px] font-semibold text-white">AI Agent Usage</div>
+          <div class="text-[11px] text-slate-400">Live • 24h</div>
+        </div>
+        <div id="agent-list" class="space-y-[13px]">
+          <!-- JS renders agents -->
+        </div>
+        <button class="mt-4 w-full glass glass-hover rounded-xl py-2.5 text-[12.5px] font-medium text-slate-300">View all agents <span class="text-slate-500">→</span></button>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-5">
+      <!-- Recent Workflow Runs -->
+      <div class="xl:col-span-7 glass rounded-[22px] p-5 sm:p-6">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div class="text-[14px] font-semibold text-white">Recent Workflow Runs</div>
+          <div class="flex items-center gap-2 text-[11.5px]">
+            <span class="text-slate-400">Filter:</span>
+            <button data-run-filter="all" class="run-filter px-2.5 py-1 rounded-full bg-white/[0.08] text-slate-200">All</button>
+            <button data-run-filter="success" class="run-filter px-2.5 py-1 rounded-full text-slate-400 hover:text-slate-200">Success</button>
+            <button data-run-filter="slow" class="run-filter px-2.5 py-1 rounded-full text-slate-400 hover:text-slate-200">&gt;1s</button>
+          </div>
+        <div class="overflow-x-auto soft-scroll -mx-1 px-1">
+          <table class="w-full text-[13px] min-w-[560px]">
+            <thead class="text-[11px] uppercase tracking-wider text-slate-500">
+              <tr class="border-b border-white/[0.08]">
+                <th class="text-left font-semibold py-2.5 pr-4">Workflow</th>
+                <th class="text-left font-semibold py-2.5 pr-4">Node</th>
+                <th class="text-left font-semibold py-2.5 pr-4">Status</th>
+                <th class="text-right font-semibold py-2.5 pr-4">Duration</th>
+                <th class="text-right font-semibold py-2.5">When</th>
+              </tr>
+            </thead>
+            <tbody id="runs-tbody" class="text-slate-300">
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="runs-empty" class="hidden text-[13px] text-slate-400 py-6 text-center">No runs match your search.</div>
+      </div>
+
+      <!-- RAG Knowledge Base -->
+      <div class="xl:col-span-5 glass rounded-[22px] p-5 sm:p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-[14px] font-semibold text-white">RAG Knowledge Base</div>
+          <span class="text-[10.5px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">pgvector live</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="rounded-[14px] bg-white/[0.045] border border-white/[0.09] px-4 py-3">
+            <div class="text-[11px] text-slate-400">Documents</div>
+            <div class="text-[22px] font-[800] tracking-tight text-white">4,281</div>
+            <div class="text-[11px] text-emerald-400">+42 today</div>
+          </div>
+          <div class="rounded-[14px] bg-white/[0.045] border border-white/[0.09] px-4 py-3">
+            <div class="text-[11px] text-slate-400">Embeddings</div>
+            <div class="text-[22px] font-[800] tracking-tight text-white">18,492</div>
+            <div class="text-[11px] text-slate-400">1536-d</div>
+          </div>
+        </div>
+
+        <div class="text-[12px] text-slate-400 mb-2">Semantic search</div>
+        <div class="relative mb-3">
+          <input id="rag-input" type="text" placeholder="Ask your knowledge base…" class="w-full bg-[#0f1526]/80 border border-white/[0.14] rounded-[14px] pl-4 pr-11 py-3.5 text-[13.5px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violetElectric/70" />
+          <button id="rag-send" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-[10px] bg-gradient-to-br from-violetElectric to-[#5b73ff] flex items-center justify-center text-white">
+            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="rag-results" class="space-y-2 text-[12.5px] text-slate-300 min-h-[96px]">
+          <div class="rag-item rounded-xl bg-white/[0.035] border border-white/[0.08] px-3 py-2.5">
+            <div class="text-slate-200 font-medium">Try: “refund policy for EU customers Q4”</div>
+            <div class="text-slate-400 text-[11.5px] mt-0.5">Top hits from policy_v4.md • support_kb • compliance_eu.pdf</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 text-[11.5px] text-slate-400 mt-4 pt-3 border-t border-white/[0.08] flex-wrap">
+          <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Index healthy</span>
+          <span> recall @10: 0.94</span>
+          <span class="ml-auto">Updated 4m ago</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer small -->
+    <div class="flex flex-wrap items-center justify-between gap-3 text-[11.5px] text-slate-500 mt-8 pt-6 border-t border-white/[0.07]">
+      <div>© 2026 N8N Automation Platform • SOC2 • GDPR • Arusha / EU-West</div>
+      <div class="flex items-center gap-5">
+        <a href="#" class="hover:text-slate-300">Status</a>
+        <a href="#" class="hover:text-slate-300">Docs</a>
+        <a href="#" class="hover:text-slate-300">Changelog</a>
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> All systems operational</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- COPILOT RIGHT PANEL -->
+<div id="copilot-panel" class="fixed right-0 top-0 h-full w-[380px] max-w-[92vw] z-[60] translate-x-full transition-transform duration-300 ease-out">
+  <div class="h-full glass-strong shadow-2xl border-l border-white/[0.12] flex flex-col">
+    <!-- Copilot header -->
+    <div class="px-5 pt-5 pb-4 border-b border-white/[0.08] flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-[10px] bg-gradient-to-br from-violetElectric to-cyanSoft flex items-center justify-center text-white shadow-glow-violet">
+          <i data-lucide="sparkles" class="w-[15px] h-[15px]"></i>
+        </div>
+        <div>
+          <div class="text-[13.5px] font-semibold text-white">N8N Copilot</div>
+          <div class="text-[11px] text-emerald-300 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> GPT-4.1 + tools</div>
+        </div>
+      <div class="flex items-center gap-1.5">
+        <button id="copilot-min" class="p-1.5 rounded-lg hover:bg-white/[0.07] text-slate-400"><i data-lucide="minus" class="w-4 h-4"></i></button>
+        <button id="copilot-close" class="p-1.5 rounded-lg hover:bg-white/[0.07] text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div id="copilot-chat" class="flex-1 overflow-y-auto soft-scroll px-5 py-5 space-y-4">
+      <div class="flex gap-3">
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-violetElectric to-cyanSoft flex items-center justify-center text-white text-[11px] font-bold shrink-0">AI</div>
+        <div class="glass rounded-[16px] rounded-tl-[6px] px-4 py-3 text-[13.5px] leading-relaxed text-slate-200 max-w-[300px]">
+          Habari Yusuph, niko tayari kujenga workflow. 👋<br/><br/>
+          I see your Support agent handled 1.2k messages today with 94% CSAT. Want me to optimize the fallback chain or build something new?
+        </div>
+      </div>
+      <div id="copilot-messages"></div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="px-5 pb-3">
+      <div class="text-[11px] text-slate-400 mb-2">Quick actions</div>
+      <div class="grid grid-cols-1 gap-2">
+        <button data-copilot-action="build" class="copilot-quick glass glass-hover rounded-xl px-3 py-2.5 text-left text-[12.5px] text-slate-200 flex items-center gap-2">
+          <i data-lucide="workflow" class="w-4 h-4 text-violet-300"></i> Build n8n workflow
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button data-copilot-action="analyze" class="copilot-quick glass glass-hover rounded-xl px-3 py-2.5 text-left text-[12.5px] text-slate-200">Analyze metrics</button>
+          <button data-copilot-action="generate" class="copilot-quick glass glass-hover rounded-xl px-3 py-2.5 text-left text-[12.5px] text-slate-200">Generate agent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div class="px-5 pb-5 pt-2 border-t border-white/[0.08]">
+      <div class="relative glass rounded-[16px] border border-white/[0.14]">
+        <textarea id="copilot-input" rows="2" placeholder="Ask Copilot to build, debug, or optimize…" class="w-full bg-transparent px-3.5 py-3 pr-11 text-[13px] text-slate-200 placeholder-slate-500 focus:outline-none resize-none"></textarea>
+        <button id="copilot-send" class="absolute right-2 bottom-2 w-8 h-8 rounded-[10px] bg-white text-[#0d1220] flex items-center justify-center hover:bg-slate-200 transition">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-slate-500 mt-2 px-1">
+        <span>↵ Send</span>
+        <span>⇧↵ New line</span>
+        <span class="ml-auto">Context: Overview</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] space-y-2 w-[92vw] max-w-sm"></div>
+
+<script>
+  lucide.createIcons();
+
+  // Data
+  const agents = [
+    { name: "Customer Support", msgs: 1240, pct: 92, color: "#8b5cf6" },
+    { name: "Sales", msgs: 842, pct: 78, color: "#22d3ee" },
+    { name: "Research", msgs: 612, pct: 66, color: "#8b5cf6" },
+    { name: "Data Analyst", msgs: 508, pct: 58, color: "#22d3ee" },
+    { name: "Workflow Builder", msgs: 430, pct: 48, color: "#8b5cf6" },
+    { name: "Content Generator", msgs: 550, pct: 62, color: "#22d3ee" },
+  ];
+
+  const runs = [
+    { workflow: "Auth – Registration", node: "Verify Email • n8n", status: "success", duration: "42ms", when: "12s ago"},
+    { workflow: "CRM – Lead Scoring", node: "HubSpot • AI Rank", status: "success", duration: "1.2s", when: "31s ago"},
+    { workflow: "Support – AI Auto-Response", node: "RAG • GPT-4.1", status: "success", duration: "890ms", when: "1m ago"},
+    { workflow: "Finance – Invoice", node: "Stripe • QuickBooks", status: "success", duration: "2.1s", when: "2m ago"},
+    { workflow: "Marketing – Drip Campaign", node: "Postmark • Segment", status: "success", duration: "680ms", when: "3m ago"},
+    { workflow: "Ops – ETL Sync", node: "Postgres • S3", status: "success", duration: "4.3s", when: "5m ago"},
+  ];
+
+  // Render Agents
+  const agentList = document.getElementById('agent-list');
+  agents.forEach(a => {
+    const el = document.createElement('div');
+    el.className = "flex items-center gap-3 group";
+    el.innerHTML = `
+      <div class="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/[0.09] flex items-center justify-center text-slate-300">
+        <i data-lucide="bot" class="w-4 h-4"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between text-[13px]">
+          <span class="text-slate-200 font-medium truncate">${a.name}</span>
+          <span class="text-slate-400 text-[12px]">${a.msgs.toLocaleString()} msgs</span>
+        </div>
+        <div class="mt-1.5 h-1.5 bg-white/[0.08] rounded-full overflow-hidden">
+          <div class="h-full rounded-full" style="width:${a.pct}%; background: linear-gradient(90deg, ${a.color}, #a78bfa)"></div>
+        </div>
+      </div>
+      <span class="w-2 h-2 rounded-full bg-emerald-400 shadow shadow-emerald-400/40 shrink-0"></span>
+    `;
+    agentList.appendChild(el);
+  });
+
+  // Render Runs
+  const runsTbody = document.getElementById('runs-tbody');
+  function renderRuns(filter = 'all', search = '') {
+    runsTbody.innerHTML = '';
+    let list = [...runs];
+    if (filter === 'slow') {
+      list = list.filter(r => {
+        const v = r.duration.includes('ms') ? parseFloat(r.duration)/1000 : parseFloat(r.duration);
+        return v >= 1;
+      });
+    }
+    const q = search.toLowerCase().trim();
+    if (q) list = list.filter(r => (r.workflow + ' ' + r.node).toLowerCase().includes(q));
+    document.getElementById('runs-empty').classList.toggle('hidden', list.length > 0);
+    list.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.className = "border-b border-white/[0.06] hover:bg-white/[0.03] transition";
+      tr.innerHTML = `
+        <td class="py-3 pr-4 font-medium text-slate-200">${r.workflow}</td>
+        <td class="py-3 pr-4 text-slate-400">${r.node}</td>
+        <td class="py-3 pr-4"><span class="inline-flex items-center gap-1.5 text-emerald-300 text-[12px]"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>Success</span></td>
+        <td class="py-3 pr-4 text-right text-slate-300 tabular-nums">${r.duration}</td>
+        <td class="py-3 text-right text-slate-400">${r.when}</td>
+      `;
+      runsTbody.appendChild(tr);
+    });
+  }
+  renderRuns();
+
+  // Activity chart
+  const chartValues = [122, 148, 131, 194, 172, 156, 203]; // k runs
+  const chartPoints = chartValues.map((v, i) => {
+    const x = 40 + i * (680/6);
+    const y = 155 - (v - 110) * 0.95;
+    return {x, y, v};
+  });
+  const lineD = chartPoints.map((p,i)=> (i===0?`M ${p.x} ${p.y}`:`L ${p.x} ${p.y}`)).join(' ');
+  const areaD = lineD + ` L ${chartPoints[chartPoints.length-1].x} 170 L ${chartPoints[0].x} 170 Z`;
+  document.getElementById('linePath').setAttribute('d', lineD);
+  document.getElementById('areaPath').setAttribute('d', areaD);
+
+  const dotsG = document.getElementById('chart-dots');
+  const tooltip = document.getElementById('chart-tooltip');
+  const chartSvg = document.getElementById('activity-chart');
+  chartPoints.forEach((p, i) => {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', p.x);
+    c.setAttribute('cy', p.y);
+    c.setAttribute('r', 4);
+    c.setAttribute('fill', '#d9d6ff');
+    c.setAttribute('stroke', '#0b0f1a');
+    c.setAttribute('stroke-width', '1.6');
+    c.classList.add('chart-dot');
+    c.style.cursor = 'pointer';
+    c.addEventListener('mouseenter', () => {
+      tooltip.textContent = `${chartValues[i]}k runs`;
+      tooltip.style.left = p.x + 'px';
+      tooltip.style.top = (p.y - 8) + 'px';
+      tooltip.classList.remove('hidden');
+      c.setAttribute('r', 5.8);
+    });
+    c.addEventListener('mouseleave', () => {
+      tooltip.classList.add('hidden');
+      c.setAttribute('r', 4);
+    });
+    dotsG.appendChild(c);
+  });
+
+  // Sidebar nav toasts
+  document.querySelectorAll('#sidebar-nav a[data-nav]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const name = a.dataset.nav;
+      if(name !== 'Overview') {
+        showToast(`${name} — Coming soon in 2026 build`);
+        return;
+      }
+      document.querySelectorAll('#sidebar-nav a[data-nav]').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+    });
+  });
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = "toast-in glass-strong rounded-xl px-4 py-3 text-[13px] text-slate-200 shadow-2xl border border-white/[0.14]";
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(()=> { t.style.opacity='0'; t.style.transform='translateY(6px)'; t.style.transition='all .25s'; setTimeout(()=>t.remove(), 260)}, 2100);
+  }
+
+  // Mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  function openSidebar() { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); }
+  function closeSidebar() { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); }
+  document.getElementById('mobile-menu-btn').addEventListener('click', openSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  // Copilot panel
+  const copilot = document.getElementById('copilot-panel');
+  let copilotOpen = false;
+  function setCopilot(open) {
+    copilotOpen = open;
+    copilot.style.transform = open ? 'translateX(0)' : 'translateX(100%)';
+  }
+  document.getElementById('copilot-toggle').addEventListener('click', () => setCopilot(!copilotOpen));
+  document.getElementById('copilot-close').addEventListener('click', () => setCopilot(false));
+  document.getElementById('copilot-min').addEventListener('click', () => setCopilot(false));
+
+  // Open copilot by default on large screens
+  if (window.innerWidth >= 1280) {
+    setTimeout(()=> setCopilot(true), 400);
+  }
+
+  // Copilot chat
+  const copilotChat = document.getElementById('copilot-chat');
+  const copilotMessages = document.getElementById('copilot-messages');
+  function addCopilotMessage(role, text) {
+    const wrap = document.createElement('div');
+    wrap.className = "flex gap-3 " + (role === 'user' ? 'justify-end' : '');
+    wrap.innerHTML = role === 'user'
+      ? `<div class="bg-white text-[#101522] rounded-[16px] rounded-tr-[6px] px-4 py-3 text-[13.5px] max-w-[300px]">${text}</div><div class="w-7 h-7 rounded-full bg-[#f1c27a] flex items-center justify-center text-[11px] font-bold text-[#2a1b09] shrink-0">YH</div>`
+      : `<div class="w-7 h-7 rounded-full bg-gradient-to-br from-violetElectric to-cyanSoft flex items-center justify-center text-white text-[11px] font-bold shrink-0">AI</div><div class="glass rounded-[16px] rounded-tl-[6px] px-4 py-3 text-[13.5px] leading-relaxed text-slate-200 max-w-[300px]">${text}</div>`;
+    copilotMessages.appendChild(wrap);
+    copilotChat.scrollTop = copilotChat.scrollHeight;
+  }
+
+  function copilotReply(prompt) {
+    const replies = {
+      build: `Sawa! I can scaffold that. Which trigger?<br/><br/><span class="text-slate-300">• Webhook / HTTP<br/>• Cron / Schedule<br/>• Gmail / Slack event<br/>• Postgres change</span><br/><br/>Reply with your choice and I'll generate the nodes.`,
+      analyze: `Your last 7 days at a glance:<br/>• Runs: 1.24M (+14.2%)<br/>• Success: 99.2%<br/>• P95 latency: 142ms ↓<br/>• Most active: Customer Support agent<br/><br/>Want a weekly PDF sent to Slack?`,
+      generate: `Niko tayari! What agent should I generate?<br/>e.g. “Swahili invoice parser for WhatsApp” — I'll wire RAG, tools, and n8n nodes automatically.`,
+      default: `Nimepokea: “${prompt}”.<br/>I can build that workflow in ~38s. Want me to add error handling, RAG grounding, and Slack alerts?`
+    };
+    const key = /build|workflow/i.test(prompt) ? 'build' :
+                /analy|metric/i.test(prompt) ? 'analyze' :
+                /agent|generate/i.test(prompt) ? 'generate' : 'default';
+    setTimeout(()=> addCopilotMessage('ai', replies[key] || replies.default), 650);
+  }
+
+  document.querySelectorAll('.copilot-quick').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.copilotAction;
+      const labels = { build: "Build n8n workflow", analyze: "Analyze metrics", generate: "Generate agent" };
+      addCopilotMessage('user', labels[action]);
+      copilotReply(action);
+    });
+  });
+
+  document.getElementById('copilot-send').addEventListener('click', sendCopilot);
+  document.getElementById('copilot-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendCopilot(); }
+  });
+  function sendCopilot(){
+    const input = document.getElementById('copilot-input');
+    const v = input.value.trim();
+    if(!v) return;
+    addCopilotMessage('user', v.replace(/</g,'&lt;'));
+    input.value = '';
+    copilotReply(v);
+  }
+
+  // Search filtering
+  let currentRunFilter = 'all';
+  function getSearchVal() {
+    return (document.getElementById('globalSearch')?.value || '') +
+           (document.getElementById('globalSearchMobile')?.value || '');
+  }
+  function applySearch() {
+    const q = (document.getElementById('globalSearch')?.value || document.getElementById('globalSearchMobile')?.value || '');
+    renderRuns(currentRunFilter, q);
+  }
+  document.getElementById('globalSearch')?.addEventListener('input', applySearch);
+  document.getElementById('globalSearchMobile')?.addEventListener('input', (e)=>{
+    const d = document.getElementById('globalSearch');
+    if(d) d.value = e.target.value;
+    applySearch();
+  });
+
+  document.querySelectorAll('.run-filter').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentRunFilter = btn.dataset.runFilter;
+      document.querySelectorAll('.run-filter').forEach(b=>{ b.classList.remove('bg-white/[0.08]','text-slate-200'); b.classList.add('text-slate-400')});
+      btn.classList.add('bg-white/[0.08]','text-slate-200');
+      btn.classList.remove('text-slate-400');
+      applySearch();
+    });
+  });
+
+  // RAG search mock
+  const ragInput = document.getElementById('rag-input');
+  const ragResults = document.getElementById('rag-results');
+  function doRag(q) {
+    if(!q.trim()){
+      ragResults.innerHTML = `<div class="rag-item rounded-xl bg-white/[0.035] border border-white/[0.08] px-3 py-2.5"><div class="text-slate-200 font-medium">Try: “refund policy for EU customers Q4”</div><div class="text-slate-400 text-[11.5px] mt-0.5">Top hits from policy_v4.md • support_kb • compliance_eu.pdf</div></div>`;
+      return;
+    }
+    ragResults.innerHTML = `<div class="text-slate-400 text-[12px]">Searching pgvector…</div>`;
+    setTimeout(()=>{
+      ragResults.innerHTML = `
+        <div class="rag-item rounded-xl bg-white/[0.045] border border-white/[0.10] px-3 py-2.5">
+          <div class="text-slate-200 font-medium">1. policy_v4.md • §3.2 • score 0.914</div>
+          <div class="text-slate-400 text-[11.5px] mt-0.5">“EU customers are eligible for a 14-day refund window under Directive 2011/83/EU…”</div>
+        </div>
+        <div class="rag-item rounded-xl bg-white/[0.035] border border-white/[0.08] px-3 py-2.5">
+          <div class="text-slate-200">2. support_kb / refunds_eu • 0.881</div>
+          <div class="text-slate-400 text-[11.5px] mt-0.5">Auto-generated response template + Stripe refund node.</div>
+        </div>
+        <div class="rag-item rounded-xl bg-white/[0.035] border border-white/[0.08] px-3 py-2.5">
+          <div class="text-slate-200">3. compliance_eu.pdf • p.12 • 0.847</div>
+          <div class="text-slate-400 text-[11.5px] mt-0.5">VAT handling notes for Q4 2025 / 2026 rollout.</div>
+        </div>
+      `;
+    }, 520);
+  }
+  document.getElementById('rag-send').addEventListener('click', ()=> doRag(ragInput.value));
+  ragInput.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); doRag(ragInput.value); }});
+
+  // Misc toasts
+  document.getElementById('notif-btn').addEventListener('click', ()=> showToast('3 notifications — all clear, no action needed.'));
+  document.getElementById('upgrade-btn').addEventListener('click', ()=> showToast('Scale plan upgrade — checkout coming soon.'));
+
+  // Re-render lucide icons for dynamically injected content
+  const lucideObserver = new MutationObserver(()=> { try { lucide.createIcons(); } catch(e){} });
+  lucideObserver.observe(document.body, { childList: true, subtree: true });
+
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>

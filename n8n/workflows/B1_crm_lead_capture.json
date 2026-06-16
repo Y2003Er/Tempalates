@@ -1,0 +1,60 @@
+{
+  "name": "CRM \u2013 Lead Capture & AI Scoring",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Webhook Lead",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "chat"
+      },
+      "name": "OpenAI Score",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Route Hot Leads",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Insert CRM",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Slack Notify",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1040,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

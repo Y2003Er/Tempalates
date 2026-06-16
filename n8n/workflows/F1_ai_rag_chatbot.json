@@ -1,0 +1,48 @@
+{
+  "name": "AI \u2013 RAG Chatbot",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Chat Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "pgvector Search",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "LLM Answer",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Log Conversation",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

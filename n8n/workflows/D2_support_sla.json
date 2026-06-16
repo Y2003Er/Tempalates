@@ -1,0 +1,38 @@
+{
+  "name": "Support \u2013 SLA Tracking",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Cron SLA",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Find Breaches",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Alert Team",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

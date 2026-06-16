@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: automation
+      POSTGRES_USER: automation
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ../database/02_seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    ports: ["5432:5432"]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  n8n:
+    image: n8nio/n8n:1.88.0
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: automation
+      DB_POSTGRESDB_USER: automation
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+    ports: ["5678:5678"]
+  api:
+    build: ../services/api
+    environment:
+      DATABASE_URL: postgres://automation:${POSTGRES_PASSWORD}@postgres:5432/automation
+      JWT_SECRET: ${JWT_SECRET}
+    ports: ["8080:8080"]
+volumes:
+  pgdata:

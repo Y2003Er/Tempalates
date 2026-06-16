@@ -1,0 +1,48 @@
+{
+  "name": "Auth \u2013 Login + MFA",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Webhook Login",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Verify Password",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Check MFA",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Issue JWT",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}

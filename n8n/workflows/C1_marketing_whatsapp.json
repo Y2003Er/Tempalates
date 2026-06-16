@@ -1,0 +1,48 @@
+{
+  "name": "Marketing \u2013 WhatsApp AI Campaign",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Get Audience",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        260,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "AI Generate Copy",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "WhatsApp Send",
+      "type": "n8n-nodes-base.whatsapp",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}
